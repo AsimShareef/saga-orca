@@ -21,7 +21,7 @@ jobs:
 
     - name: Build and Install libpqxx from source
       run: |
-        git clone --branch 7.8.1 https://github.com/jtv/libpqxx.git
+        git clone --branch 7.9.2 https://github.com/jtv/libpqxx.git
         cd libpqxx
         cmake -B build -D BUILD_SHARED_LIBS=ON -D SKIP_TESTS=ON
         cmake --build build --parallel 4
