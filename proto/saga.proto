@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package saga;
+
+message TxRequest {
+    string tx_id = 1;
+    string payload = 2;
+}
+
+message TxResponse {
+    bool success = 1;
+    string error_message = 2;
+}
+
+service SagaParticipant {
+    rpc ExecuteAction (TxRequest) returns (TxResponse);
+    rpc CompensateAction (TxRequest) returns (TxResponse);
+}
+
+message StartSagaRequest {
+    string order_details = 1;
+}
+
+message StartSagaResponse {
+    string tx_id = 1;
+    string final_status = 2;
+}
+
+service OrchestratorAPI {
+    rpc StartSaga (StartSagaRequest) returns (StartSagaResponse);
+}

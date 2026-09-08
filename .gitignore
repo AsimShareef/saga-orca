@@ -1,0 +1,30 @@
+# Build directories
+build/
+out/
+bin/
+obj/
+
+# Visual Studio files
+.vs/
+*.vcxproj.user
+*.suo
+*.user
+*.db
+*.opendb
+
+# vcpkg local installation directory
+vcpkg_installed/
+
+# Compiled binaries and libraries
+*.exe
+*.dll
+*.lib
+*.obj
+*.exp
+
+# OS generated files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store
