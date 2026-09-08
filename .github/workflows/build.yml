@@ -13,10 +13,19 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Install Dependencies
+    - name: Install System Dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y build-essential cmake libpqxx-dev protobuf-compiler libprotobuf-dev protobuf-compiler-grpc libgrpc++-dev
+        # Swapped libpqxx-dev for libpq-dev (the underlying C library needed to build pqxx)
+        sudo apt-get install -y build-essential cmake libpq-dev protobuf-compiler libprotobuf-dev protobuf-compiler-grpc libgrpc++-dev
+
+    - name: Build and Install libpqxx from source
+      run: |
+        git clone --branch 7.8.1 https://github.com/jtv/libpqxx.git
+        cd libpqxx
+        cmake -B build -D BUILD_SHARED_LIBS=ON -D SKIP_TESTS=ON
+        cmake --build build --parallel 4
+        sudo cmake --install build
 
     - name: Configure CMake
       run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Release
