@@ -2,6 +2,7 @@
 #include <string>
 #include <memory>
 #include <thread>
+#include <cstdlib> // Required for std::getenv
 #include <grpcpp/grpcpp.h>
 #include "saga.grpc.pb.h"
 #include "saga_engine.h"
@@ -24,9 +25,9 @@ void RunSagaWorkflow(std::string tx_id, std::string payload) {
     if (!ctx) return;
 
     // Initialize clients
-    SagaParticipantClient order_client(grpc::CreateChannel("localhost:50053", grpc::InsecureChannelCredentials()));
-    SagaParticipantClient inv_client(grpc::CreateChannel("localhost:50052", grpc::InsecureChannelCredentials()));
-    SagaParticipantClient pay_client(grpc::CreateChannel("localhost:50051", grpc::InsecureChannelCredentials()));
+    SagaParticipantClient order_client(grpc::CreateChannel("order-server:50053", grpc::InsecureChannelCredentials()));
+    SagaParticipantClient inv_client(grpc::CreateChannel("inventory-server:50052", grpc::InsecureChannelCredentials()));
+    SagaParticipantClient pay_client(grpc::CreateChannel("payment-server:50051", grpc::InsecureChannelCredentials()));
 
     // Step 1: Order
     db_logger->LogStateTransition(tx_id, "EXECUTING_ORDER", payload);
@@ -108,9 +109,16 @@ void RunOrchestrator() {
     server->Wait();
 }
 
+
+
+#include <cstdlib>
+
 int main(int argc, char** argv) {
     try {
-        std::string conn_str = "dbname=saga_db user=saga_user password=saga_password host=127.0.0.1 port=5433";
+        const char* env_conn = std::getenv("DB_CONNECTION");
+        // Update the fallback string to use Docker's internal networking
+        std::string conn_str = env_conn ? env_conn : "host=postgres port=5432 dbname=saga_db user=saga_user password=saga_password";
+        
         db_logger = std::make_unique<DbLogger>(conn_str);
         RunOrchestrator();
     } catch (const std::exception& e) {

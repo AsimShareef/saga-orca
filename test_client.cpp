@@ -40,7 +40,7 @@ public:
 };
 
 int main() {
-    TestClient client(grpc::CreateChannel("localhost:50000", grpc::InsecureChannelCredentials()));
+    TestClient client(grpc::CreateChannel("127.0.0.1:50000", grpc::InsecureChannelCredentials()));
     
     client.SendTransaction("Successful Transaction", "{\"user\": \"user_101\", \"item\": \"macbook_pro\", \"status\": \"success\"}");
     client.SendTransaction("Order Validation Failure", "{\"user\": \"user_101\", \"item\": \"macbook\", \"status\": \"fail_order\"}");

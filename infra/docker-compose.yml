@@ -1,7 +1,7 @@
-version: '3.8'
 services:
   postgres:
     image: postgres:15-alpine
+    container_name: infra-postgres-1
     environment:
       POSTGRES_USER: saga_user
       POSTGRES_PASSWORD: saga_password
@@ -10,3 +10,66 @@ services:
       - "5433:5432"
     volumes:
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U saga_user -d saga_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  payment-server:
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile.service
+      args:
+        SERVICE_NAME: payment_server
+    ports:
+      - "50051:50051"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  inventory-server:
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile.service
+      args:
+        SERVICE_NAME: inventory_server
+    ports:
+      - "50052:50052"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  order-server:
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile.service
+      args:
+        SERVICE_NAME: order_server
+    ports:
+      - "50053:50053"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  saga-orchestrator:
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile.service
+      args:
+        SERVICE_NAME: saga_orchestrator
+    ports:
+      - "50000:50000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      payment-server:
+        condition: service_started
+      inventory-server:
+        condition: service_started
+      order-server:
+        condition: service_started
+
+volumes:
+  pgdata:
